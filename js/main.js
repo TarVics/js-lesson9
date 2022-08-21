@@ -442,8 +442,10 @@ const layoutTable = makeTag('div', e => e.classList.add('layout'),
                     const value = document.getElementById('table-values').value;
                     let table = document.getElementById('table-contents');
 
-                    // Цей шматок буде швидше працювати, оскільки відразу увесь вміст таблиці вписується
-                    // Але, якщо потрібно створювати кожен тег таблиці окремо, то так і зробим нижче
+                    /* Варіант 1.
+                       Цей шматок буде швидше працювати, оскільки відразу увесь вміст таблиці вписується
+                       Але, якщо потрібно створювати кожен тег таблиці окремо, то так і зробимо у варіанті 2
+                    */
                     // if (!table) {
                     //     table = makeTag('table', e => {e.id = 'table-contents'});
                     //     document.body.appendChild(table);
@@ -458,8 +460,11 @@ const layoutTable = makeTag('div', e => e.classList.add('layout'),
                     // }
                     // table.innerHTML = res;
 
+                    /* Варіант 2.
+                       Варіант додавання таблиці зі створенням кожного тегу окремо.
+                    */
                     if (rows && cols && value) {
-                        const tableSrc = makeTag('tbody');
+                        const tableSrc = makeTag('table', e => {e.id = 'table-contents'});
 
                         tableSrc.appendChild(makeTag('tr', e => {
                             for (let i = 0; i < cols; i++) {
@@ -475,10 +480,7 @@ const layoutTable = makeTag('div', e => e.classList.add('layout'),
                             }));
                         }
                         if(table) table.remove();
-
-                        document.body.appendChild(
-                            makeTag('table', e => {e.id = 'table-contents'}, tableSrc)
-                        );
+                        document.body.appendChild(tableSrc);
                     }
 
                 }
