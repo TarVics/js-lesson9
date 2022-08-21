@@ -13,13 +13,15 @@
  * @param {...HTMLElement} children Дочірні елементи, які будуть додані до поточного елемента
  * @returns {HTMLElement}
  */
-const makeTag = function(name, fnParams, ...children) {
+const makeTag = function(name, fnParams = undefined, ...children) {
     const res = document.createElement(name);
     if (typeof fnParams === 'function') {
         fnParams(res);
         if (children.length) res.append(...children);
-    } else {
+    } else if (fnParams) {
         res.append(fnParams, ...children);
+    } else {
+        res.append(...children);
     }
     return res;
 }
@@ -439,19 +441,46 @@ const layoutTable = makeTag('div', e => e.classList.add('layout'),
                     const cols = +(document.getElementById('table-cols').value);
                     const value = document.getElementById('table-values').value;
                     let table = document.getElementById('table-contents');
-                    if (!table) {
-                        table = makeTag('table', e => {e.id = 'table-contents'});
-                        document.body.appendChild(table);
-                    }
-                    let res = '';
+
+                    // Цей шматок буде швидше працювати, оскільки відразу увесь вміст таблиці вписується
+                    // Але, якщо потрібно створювати кожен тег таблиці окремо, то так і зробим нижче
+                    // if (!table) {
+                    //     table = makeTag('table', e => {e.id = 'table-contents'});
+                    //     document.body.appendChild(table);
+                    // }
+                    // let res = '';
+                    // if (rows && cols && value) {
+                    //     res = '<tr>';
+                    //     for (let i = 0; i < cols; i++) res += '<th>' + (i + 1) + '</th>';
+                    //     res += '</tr>';
+                    //     let src = '<tr>' + ('<td>' + value + '</td>').repeat(cols) + '</tr>';
+                    //     res += src.repeat(rows);
+                    // }
+                    // table.innerHTML = res;
+
                     if (rows && cols && value) {
-                        res = '<tr>';
-                        for (let i = 0; i < cols; i++) res += '<th>' + (i + 1) + '</th>';
-                        res += '</tr>';
-                        let src = '<tr>' + ('<td>' + value + '</td>').repeat(cols) + '</tr>';
-                        res += src.repeat(rows);
+                        const tableSrc = makeTag('tbody');
+
+                        tableSrc.appendChild(makeTag('tr', e => {
+                            for (let i = 0; i < cols; i++) {
+                                e.appendChild(makeTag('th', e => e.innerHTML = '' + (i + 1)));
+                            }
+                        }));
+
+                        for (let i = 0; i < rows; i++) {
+                            tableSrc.appendChild(makeTag('tr', e => {
+                                for (let i = 0; i < cols; i++) {
+                                    e.appendChild(makeTag('td', e => e.innerHTML = value));
+                                }
+                            }));
+                        }
+                        if(table) table.remove();
+
+                        document.body.appendChild(
+                            makeTag('table', e => {e.id = 'table-contents'}, tableSrc)
+                        );
                     }
-                    table.innerHTML = res;
+
                 }
             })
         )
